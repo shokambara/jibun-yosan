@@ -1,0 +1,21 @@
+{
+  "name": "じぶん予算",
+  "short_name": "じぶん予算",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#e0f7fa",
+  "theme_color": "#0d9488",
+  "description": "シンプルなサイクルで暮らしを整えるじぶんだけの予算管理アプリ。",
+  "icons": [
+    {
+      "src": "web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

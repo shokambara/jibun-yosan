@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>じぶん予算</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d9488">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        input[type="date"]:not(:valid)::before {
+            content: attr(placeholder);
+            color: #9ca3af;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        .fade-in { animation: fadeIn 0.7s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active, .chart-tab-active, .history-filter-tab-active {
+            background-image: linear-gradient(to right, #2dd4bf, #38bdf8) !important;
+            color: white !important;
+            font-weight: bold;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Custom Slider Style */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: linear-gradient(to right, #2dd4bf var(--value-percent, 0%), #d1d5db var(--value-percent, 0%));
+            border-radius: 9999px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #0d9488; /* teal-600 */
+            cursor: pointer;
+            margin-top: -6px; /* (thumb height - track height) / 2 */
+            box-shadow: 0 0 10px rgba(13, 148, 136, 0.5);
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: linear-gradient(to right, #2dd4bf var(--value-percent, 0%), #d1d5db var(--value-percent, 0%));
+            border-radius: 9999px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #0d9488;
+            cursor: pointer;
+            border: none;
+        }
+        
+        /* Scrollbar styles */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 2px;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #bdc3c7 transparent;
+        }
+
+        /* Tutorial Modal Styles */
+        .tutorial-scroller {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tutorial-scroller::-webkit-scrollbar { display: none; }
+        .tutorial-scroller { -ms-overflow-style: none; scrollbar-width: none; }
+        .tutorial-slide { scroll-snap-align: start; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-cyan-50 to-emerald-100 min-h-screen">
+
+    <div class="w-full max-w-md mx-auto p-4 py-8">
+        
+        <!-- タイトル画面 -->
+        <div id="title-screen" class="space-y-6 fade-in">
+             <div class="text-center pt-8 pb-8">
+                <div class="w-36 h-36 bg-gray-200/50 rounded-3xl mx-auto mb-8 flex items-center justify-center border border-gray-300/50">
+                    <img src="web-app-manifest-512x512.png" alt="じぶん予算ロゴ" class="w-full h-full object-contain rounded-3xl">
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800" style="font-family: 'Noto Sans JP', sans-serif;">じぶん予算</h1>
+                <div class="mt-4 text-gray-600">
+                    <p class="font-semibold">計画、記録、振り返り。</p>
+                    <p class="text-sm">シンプルなサイクルで暮らしを整えるじぶんだけの予算管理アプリ。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                 <div>
+                    <button id="new-goal-setup-btn" class="w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all transform hover:scale-105 shadow-lg">じぶん予算をはじめる</button>
+                    <a href="#" id="how-to-use-link" class="block text-center text-sm text-gray-500 hover:text-teal-600 mt-3">使い方を見る</a>
+                 </div>
+                 <button id="view-past-budgets-title-btn" class="w-full bg-white text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition shadow">過去の予算を見る</button>
+            </div>
+        </div>
+
+        <!-- 初期設定画面 -->
+        <div id="setup-screen" class="hidden space-y-6">
+            <div class="card p-8 rounded-2xl space-y-6">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-gray-800">予算設定</h1>
+                </div>
+                
+                <div class="space-y-4 pt-4">
+                    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">STEP1: タイトルと期間の設定</h2>
+                    <div>
+                        <label for="title-input" class="block text-sm font-medium text-gray-600 mb-2">タイトル</label>
+                        <input type="text" id="title-input" placeholder="例: 〇〇年〇月予算" class="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="start-date-input" class="block text-sm font-medium text-gray-600 mb-2">開始日</label>
+                            <input type="date" id="start-date-input" placeholder="日付を選択" class="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <div>
+                            <label for="end-date-input" class="block text-sm font-medium text-gray-600 mb-2">終了日</label>
+                            <input type="date" id="end-date-input" placeholder="日付を選択" class="w-full px-4 py-3 bg-white/50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4">
+                    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2">STEP2: カテゴリごとの予算を設定</h2>
+                    <div id="budget-categories-container" class="space-y-4">
+                        <!-- Dynamic categories will be inserted here -->
+                    </div>
+                    <button id="add-category-btn" class="w-full text-sm text-teal-600 font-semibold bg-teal-100/50 py-2 rounded-lg hover:bg-teal-100 transition">+ 予算カテゴリを追加</button>
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="font-bold text-gray-700">総予算</span>
+                            <span id="total-budget-display" class="font-bold text-teal-600">¥0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="back-to-home-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition">ホームに戻る</button>
+                    <button id="set-button" class="w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all transform hover:scale-105 shadow-lg">始める</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- メイン画面 -->
+        <div id="main-screen" class="hidden space-y-6">
+            <h1 id="main-title" class="text-2xl font-bold text-center text-gray-700"></h1>
+            
+             <div class="space-y-2">
+                <div class="flex space-x-2">
+                    <button data-tab="main" class="tab flex-none px-6 py-3 font-semibold text-sm text-gray-700 bg-white rounded-lg shadow">サマリー</button>
+                    <div id="category-tabs-container" class="flex-1 flex items-center space-x-2 bg-gray-200/50 p-1 rounded-lg overflow-x-auto custom-scrollbar">
+                        <!-- Dynamic tabs will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- サマリーカード -->
+            <div id="summary-card" class="card p-6 rounded-2xl">
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between items-end">
+                        <p id="summary-title" class="text-sm text-gray-500"></p>
+                        <p id="remaining-amount" class="text-4xl font-bold text-gray-800"></p>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div id="progress-bar" class="h-full rounded-full transition-all duration-500 ease-out"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center pt-4 border-t border-gray-200">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                        <p class="text-xs text-gray-500">残り日数</p>
+                        <p id="remaining-days" class="text-xl font-bold text-gray-700"></p>
+                    </div>
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" /></svg>
+                        <p class="text-xs text-gray-500">終了日</p>
+                        <p id="target-date" class="text-xl font-bold text-gray-700"></p>
+                    </div>
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.158-.103.346-.196.552-.257m.046-.012a3 3 0 011.938 0l.046.012M8.985 7.161a3 3 0 00-1.938 0l-.046.012M10 2a8 8 0 100 16 8 8 0 000-16zM5.12 7.12a5.02 5.02 0 016.23-1.84M14.88 12.88a5.02 5.02 0 01-6.23 1.84" /></svg>
+                        <p class="text-xs text-gray-500">1日の目安</p>
+                        <p id="daily-average" class="text-xl font-bold text-gray-700"></p>
+                    </div>
+                </div>
+                <div id="cumulative-result-container" class="text-center pt-4 mt-4 border-t border-gray-200">
+                     <p class="text-xs text-gray-500">ここまでの累計</p>
+                     <p id="cumulative-result" class="text-xl font-bold text-gray-700"></p>
+                </div>
+            </div>
+            
+            <!-- メインタブコンテンツ -->
+            <div id="main-tab-content" class="space-y-6">
+                 <div id="charts-card" class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                         <h2 class="text-lg font-semibold text-gray-700">日別支出</h2>
+                         <div id="chart-view-buttons" class="flex space-x-1 bg-gray-200 p-0.5 rounded-md text-xs">
+                             <!-- Chart view buttons will be inserted here -->
+                         </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <div id="bar-chart-container" class="relative h-64">
+                            <canvas id="bar-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-2xl">
+                    <h2 id="daily-review-title" class="text-lg font-semibold text-gray-700 mb-3"></h2>
+                    <div id="daily-review-content" class="text-sm text-gray-600 space-y-2"></div>
+                </div>
+                <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-700">支出履歴</h2>
+                        <div id="history-filter-buttons" class="flex space-x-1 bg-gray-200 p-0.5 rounded-md text-xs">
+                             <!-- History filter buttons will be inserted here -->
+                         </div>
+                    </div>
+                    <div id="expense-history-list" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
+                </div>
+            </div>
+            
+            <!-- カテゴリタブコンテンツ -->
+            <div id="category-tab-content" class="hidden space-y-6">
+                <div class="card p-6 rounded-2xl space-y-4">
+                    <h2 id="expense-form-title" class="text-lg font-semibold text-gray-700"></h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div><label class="block text-sm font-medium text-gray-600 mb-1">日付</label><input type="date" id="expense-date-input" class="w-full px-4 py-2 bg-white/50 border border-gray-300 rounded-lg"></div>
+                        <div><label class="block text-sm font-medium text-gray-600 mb-1">金額</label><input type="number" id="expense-amount-input" placeholder="使った金額" class="w-full px-4 py-2 bg-white/50 border border-gray-300 rounded-lg"></div>
+                    </div>
+                    <div><label class="block text-sm font-medium text-gray-600 mb-1">メモ</label><input type="text" id="expense-memo-input" placeholder="例: ランチ代" class="w-full px-4 py-2 bg-white/50 border border-gray-300 rounded-lg"></div>
+                    <button id="add-expense-button" class="w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-3 px-5 rounded-lg hover:opacity-90 shadow-lg">入力する</button>
+                </div>
+                <div class="card p-6 rounded-2xl">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-3">このカテゴリの支出履歴</h2>
+                    <div id="category-expense-history-list" class="space-y-3 max-h-72 overflow-y-auto pr-2"></div>
+                </div>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                <button id="edit-settings-btn" class="w-full bg-white text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-100 transition shadow">設定を編集</button>
+                <button id="reset-button" class="w-full bg-gray-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-600 transition">この予算をアーカイブ</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="past-budgets-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-md"><h2 class="text-xl font-bold text-gray-800 mb-6 text-center">過去の予算</h2><div id="past-budgets-list" class="space-y-4 max-h-96 overflow-y-auto"></div><div class="mt-6 text-center"><button id="close-past-budgets-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">閉じる</button></div></div></div>
+    <div id="reset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-xl font-bold text-gray-800 mb-4">確認</h2><p class="text-gray-600 mb-8">現在の予算をアーカイブしますか？</p><div class="flex justify-center gap-4"><button id="confirm-reset-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg">はい</button><button id="cancel-reset-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">いいえ</button></div></div></div>
+    <div id="goal-achieved-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-2xl font-bold text-teal-500 mb-4">目標達成！🎉</h2><p class="text-gray-600 mb-8">素晴らしい！最後までやり遂げたあなたの努力が、見事な結果に繋がりました。</p><div class="flex justify-center gap-4"><button id="new-goal-btn" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-2 px-6 rounded-lg">新しい予算へ</button><button id="close-goal-modal-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">閉じる</button></div></div></div>
+    <div id="validation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-xl font-bold text-red-500 mb-4">入力エラー</h2><p id="validation-message" class="text-gray-600 mb-8"></p><div class="flex justify-center"><button id="close-validation-modal-btn" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-2 px-6 rounded-lg">OK</button></div></div></div>
+    
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in">
+        <div class="card p-6 rounded-2xl w-full max-w-sm relative">
+            <button id="close-tutorial-btn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="overflow-hidden">
+                <div id="tutorial-scroller" class="flex overflow-x-auto tutorial-scroller">
+                    <!-- Slide 1 -->
+                    <div class="flex-shrink-0 w-full text-center p-4 tutorial-slide">
+                        <div class="text-5xl mb-4">🎯</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">1. じぶんだけの予算を立てる</h3>
+                        <p class="text-sm text-gray-600">期間やカテゴリ、金額を自由に設定。じぶんだけの予算を組み立てて、暮らしをデザインしよう。</p>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="flex-shrink-0 w-full text-center p-4 tutorial-slide">
+                         <div class="text-5xl mb-4">✍️</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">2. 日々の支出を記録</h3>
+                        <p class="text-sm text-gray-600">決めたカテゴリに沿って支出を記録。じぶんのルールだから、管理もシンプルです。</p>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="flex-shrink-0 w-full text-center p-4 tutorial-slide">
+                         <div class="text-5xl mb-4">📊</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">3. 進捗を確認する</h3>
+                        <p class="text-sm text-gray-600">サマリーで全体像を、グラフで日々のペースを確認。じぶんの計画との答え合わせが、いつでもできます。</p>
+                    </div>
+                    <!-- Slide 4 -->
+                    <div class="flex-shrink-0 w-full text-center p-4 tutorial-slide">
+                         <div class="text-5xl mb-4">🕰️</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">4. 振り返り、次へ</h3>
+                        <p class="text-sm text-gray-600">達成した予算は「過去の予算」に。経験を振り返り、次の「じぶん予算」に活かしましょう。</p>
+                    </div>
+                </div>
+            </div>
+            <div id="tutorial-dots" class="flex justify-center space-x-2 mt-4">
+                <!-- Dots will be generated by JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // DOM Elements
+        const titleScreen = document.getElementById('title-screen');
+        const setupScreen = document.getElementById('setup-screen');
+        const mainScreen = document.getElementById('main-screen');
+        
+        const newGoalSetupBtn = document.getElementById('new-goal-setup-btn');
+        const viewPastBudgetsTitleBtn = document.getElementById('view-past-budgets-title-btn');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+
+        const pastBudgetsModal = document.getElementById('past-budgets-modal');
+        const closePastBudgetsBtn = document.getElementById('close-past-budgets-btn');
+        const pastBudgetsList = document.getElementById('past-budgets-list');
+        const setButton = document.getElementById('set-button');
+        const resetButton = document.getElementById('reset-button');
+        const editSettingsBtn = document.getElementById('edit-settings-btn');
+        const resetModal = document.getElementById('reset-modal');
+        const confirmResetBtn = document.getElementById('confirm-reset-btn');
+        const cancelResetBtn = document.getElementById('cancel-reset-btn');
+        const goalAchievedModal = document.getElementById('goal-achieved-modal');
+        const newGoalBtn = document.getElementById('new-goal-btn');
+        const closeGoalModalBtn = document.getElementById('close-goal-modal-btn');
+        const validationModal = document.getElementById('validation-modal');
+        const closeValidationModalBtn = document.getElementById('close-validation-modal-btn');
+        const validationMessageEl = document.getElementById('validation-message');
+        const addExpenseButton = document.getElementById('add-expense-button');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const categoriesContainer = document.getElementById('budget-categories-container');
+        const categoryTabsContainer = document.getElementById('category-tabs-container');
+        const chartViewButtonsContainer = document.getElementById('chart-view-buttons');
+        const historyFilterButtonsContainer = document.getElementById('history-filter-buttons');
+        
+        // Tutorial Modal Elements
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const howToUseLink = document.getElementById('how-to-use-link');
+        const closeTutorialBtn = document.getElementById('close-tutorial-btn');
+        const tutorialScroller = document.getElementById('tutorial-scroller');
+        const tutorialDotsContainer = document.getElementById('tutorial-dots');
+
+
+        // State variables
+        let currentBudget = null;
+        let pastBudgets = [];
+        let activeTab = 'main';
+        let chartView = 'main';
+        let barChart = null;
+        let historyFilter = 'main';
+
+        // --- Utility Functions ---
+        const getTodayString = (date = new Date()) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const parseDateAsLocal = (dateString) => {
+            const [year, month, day] = dateString.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        };
+        const formatCurrency = (value) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(value);
+        const calculateRemainingDays = (endDateString) => {
+            if (!endDateString) return 0;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const endDate = parseDateAsLocal(endDateString);
+            const diffTime = endDate.getTime() - today.getTime();
+            if (diffTime < 0) return 0;
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        };
+        const updateSliderTrack = (slider) => {
+            if (!slider) return;
+            const min = slider.min ? parseInt(slider.min) : 0;
+            const max = slider.max ? parseInt(slider.max) : 100;
+            const value = slider.value ? parseInt(slider.value) : 0;
+            const percentage = ((value - min) / (max - min)) * 100;
+            slider.style.setProperty('--value-percent', `${percentage}%`);
+        };
+        const updateTotalBudget = () => {
+            const total = Array.from(categoriesContainer.children).reduce((sum, el) => {
+                const input = el.querySelector('input[type="number"]');
+                return sum + (parseInt(input.value) || 0);
+            }, 0);
+            document.getElementById('total-budget-display').textContent = formatCurrency(total);
+        };
+        
+        // --- State Management ---
+        const saveState = () => {
+            localStorage.setItem('currentBudget', JSON.stringify(currentBudget));
+            localStorage.setItem('pastBudgets', JSON.stringify(pastBudgets));
+        };
+        const loadState = () => {
+            const savedCurrent = localStorage.getItem('currentBudget');
+            const savedPast = localStorage.getItem('pastBudgets');
+            currentBudget = savedCurrent ? JSON.parse(savedCurrent) : null;
+            pastBudgets = savedPast ? JSON.parse(savedPast) : [];
+        };
+
+        // --- Dynamic Category UI ---
+        const createCategoryRow = (name = '', budget = 50000, placeholder = '予算カテゴリ名') => {
+            const div = document.createElement('div');
+            div.className = 'space-y-2 category-row';
+            div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div class="flex-grow mr-2">
+                        <input type="text" value="${name}" placeholder="${placeholder}" class="category-name-input w-full text-sm font-medium text-gray-600 bg-transparent focus:outline-none focus:border-b focus:border-cyan-500">
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-3 inset-y-0 flex items-center text-gray-500 text-sm">¥</span>
+                        <input type="number" value="${budget}" class="category-budget-input w-32 text-right pl-7 pr-2 py-1 bg-white/50 border border-gray-300 rounded-lg">
+                    </div>
+                     <button class="remove-category-btn text-gray-400 hover:text-red-500 ml-2 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <input type="range" value="${budget}" min="0" max="100000" step="5000" class="category-budget-slider w-full">
+            `;
+            const numInput = div.querySelector('.category-budget-input');
+            const sliderInput = div.querySelector('.category-budget-slider');
+            
+            const syncAndUpdate = () => {
+                updateSliderTrack(sliderInput);
+                updateTotalBudget();
+            };
+            
+            sliderInput.addEventListener('input', () => {
+                numInput.value = sliderInput.value;
+                syncAndUpdate();
+            });
+            numInput.addEventListener('input', () => {
+                sliderInput.value = numInput.value;
+                syncAndUpdate();
+            });
+
+            div.querySelector('.remove-category-btn').addEventListener('click', () => {
+                div.remove();
+                updateTotalBudget();
+            });
+            
+            categoriesContainer.appendChild(div);
+            syncAndUpdate();
+        };
+
+        const renderSetupCategories = (budgets = {}) => {
+            categoriesContainer.innerHTML = '';
+            const budgetEntries = Object.entries(budgets);
+            if(budgetEntries.length > 0) {
+                 budgetEntries.forEach(([name, budget]) => createCategoryRow(name, budget));
+            } else {
+                createCategoryRow('', 50000, '例: 飲食費');
+                createCategoryRow('', 50000, '例: 交際費');
+                createCategoryRow('', 50000, '例: 生活費');
+            }
+            updateTotalBudget();
+        };
+
+        const renderTabs = () => {
+            categoryTabsContainer.innerHTML = '';
+            Object.keys(currentBudget.budgets).forEach(categoryName => {
+                const button = document.createElement('button');
+                button.dataset.tab = categoryName;
+                button.className = 'tab flex-shrink-0 px-4 py-2 text-sm text-gray-600 rounded-md transition';
+                button.textContent = categoryName;
+                categoryTabsContainer.appendChild(button);
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activeTab = tab.dataset.tab;
+                    updateViewForTab();
+                });
+            });
+        };
+        
+        const renderChartViewButtons = () => {
+            chartViewButtonsContainer.innerHTML = '';
+            const createButton = (name) => {
+                const button = document.createElement('button');
+                button.dataset.view = name;
+                button.textContent = name === 'main' ? '全体' : name;
+                button.className = 'chart-tab px-2 py-0.5 rounded';
+                button.addEventListener('click', () => {
+                    chartView = name;
+                    renderChart();
+                    updateChartViewButtonStyles();
+                });
+                chartViewButtonsContainer.appendChild(button);
+            };
+            createButton('main');
+            Object.keys(currentBudget.budgets).forEach(createButton);
+            updateChartViewButtonStyles();
+        };
+        
+         const renderHistoryFilterButtons = () => {
+            const container = document.getElementById('history-filter-buttons');
+            container.innerHTML = '';
+            const createButton = (name) => {
+                const button = document.createElement('button');
+                button.dataset.filter = name;
+                button.textContent = name === 'main' ? '全体' : name;
+                button.className = 'history-filter-tab px-2 py-0.5 rounded';
+                button.addEventListener('click', () => {
+                    historyFilter = name;
+                    renderMainHistory();
+                    updateHistoryFilterButtonStyles();
+                });
+                container.appendChild(button);
+            };
+            createButton('main');
+            Object.keys(currentBudget.budgets).forEach(createButton);
+            updateHistoryFilterButtonStyles();
+        };
+
+        // --- Rendering Functions ---
+        const renderUI = () => {
+            if (currentBudget) {
+                titleScreen.classList.add('hidden');
+                setupScreen.classList.add('hidden');
+                mainScreen.classList.remove('hidden');
+                mainScreen.classList.add('fade-in');
+                document.getElementById('main-title').textContent = currentBudget.title;
+                renderTabs();
+                renderChartViewButtons();
+                updateViewForTab();
+            } else {
+                mainScreen.classList.add('hidden');
+                setupScreen.classList.add('hidden');
+                titleScreen.classList.remove('hidden');
+            }
+        };
+
+        const updateViewForTab = () => {
+            const mainTabContent = document.getElementById('main-tab-content');
+            const categoryTabContent = document.getElementById('category-tab-content');
+            const summaryCard = document.getElementById('summary-card');
+            
+            summaryCard.classList.remove('hidden');
+
+            if (activeTab === 'main') {
+                renderMainSummary();
+                mainTabContent.classList.remove('hidden');
+                categoryTabContent.classList.add('hidden');
+                chartView = 'main';
+                renderChart();
+                historyFilter = 'main';
+                renderHistoryFilterButtons();
+                renderMainHistory();
+            } else {
+                renderCategorySummary();
+                mainTabContent.classList.add('hidden');
+                categoryTabContent.classList.remove('hidden');
+                renderCategoryForm();
+                renderCategoryHistory(activeTab);
+            }
+            updateActiveTabStyle();
+        };
+
+        const renderMainSummary = () => {
+            const remainingDays = calculateRemainingDays(currentBudget.endDate);
+            const totalBudget = Object.values(currentBudget.budgets).reduce((sum, val) => sum + val, 0);
+            const totalExpenses = currentBudget.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const remainingAmount = totalBudget - totalExpenses;
+            const dailyAverage = (remainingDays > 0 && remainingAmount > 0) ? Math.floor(remainingAmount / remainingDays) : 0;
+            document.getElementById('summary-title').textContent = '残り金額 (全体)';
+            document.getElementById('remaining-amount').textContent = formatCurrency(remainingAmount);
+            document.getElementById('remaining-days').textContent = remainingDays;
+            document.getElementById('target-date').textContent = parseDateAsLocal(currentBudget.endDate).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
+            document.getElementById('daily-average').textContent = formatCurrency(dailyAverage);
+            const progress = totalBudget > 0 ? (remainingAmount / totalBudget) * 100 : 0;
+            updateProgressBar('progress-bar', progress);
+            updateDailyReview();
+            renderCumulativeResult('main');
+            if (remainingDays === 1 && parseDateAsLocal(currentBudget.endDate).getTime() === new Date(new Date().setHours(0,0,0,0)).getTime() && remainingAmount >= 0 && !currentBudget.goalAchievedNotified) {
+                 goalAchievedModal.classList.remove('hidden');
+                 currentBudget.goalAchievedNotified = true;
+                 saveState();
+            }
+        };
+        
+        const renderCategorySummary = () => {
+            const remainingDays = calculateRemainingDays(currentBudget.endDate);
+            const categoryBudget = currentBudget.budgets[activeTab] || 0;
+            const categoryExpenses = currentBudget.expenses.filter(e => e.category === activeTab).reduce((sum, exp) => sum + exp.amount, 0);
+            const remainingAmount = categoryBudget - categoryExpenses;
+            const categoryDailyAverage = (remainingDays > 0 && remainingAmount > 0) ? Math.floor(remainingAmount / remainingDays) : 0;
+            document.getElementById('summary-title').textContent = `残り予算 (${activeTab})`;
+            document.getElementById('remaining-amount').textContent = formatCurrency(remainingAmount);
+            document.getElementById('remaining-days').textContent = remainingDays;
+            document.getElementById('target-date').textContent = parseDateAsLocal(currentBudget.endDate).toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit' });
+            document.getElementById('daily-average').textContent = formatCurrency(categoryDailyAverage);
+            const progress = categoryBudget > 0 ? (remainingAmount / categoryBudget) * 100 : 0;
+            updateProgressBar('progress-bar', progress);
+            renderCumulativeResult(activeTab);
+        };
+
+        const renderCategoryForm = () => {
+            document.getElementById('expense-form-title').textContent = `${activeTab}の支出を入力`;
+            document.getElementById('expense-date-input').value = getTodayString();
+            document.getElementById('expense-amount-input').value = '';
+            document.getElementById('expense-memo-input').value = '';
+        };
+        
+        const renderCategoryHistory = (category) => {
+            const listEl = document.getElementById('category-expense-history-list');
+            listEl.innerHTML = '';
+            const filteredExpenses = currentBudget.expenses.filter(e => e.category === category);
+            
+            if (filteredExpenses.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-gray-400">このカテゴリの支出はありません</p>';
+                return;
+            }
+
+            filteredExpenses.slice().sort((a,b) => b.id - a.id).forEach(exp => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-white/50 rounded-lg';
+                item.innerHTML = `<div class="flex-1 min-w-0"><p class="text-xs text-gray-400">${exp.date}</p><p class="font-semibold text-gray-800">${formatCurrency(exp.amount)}</p><p class="text-sm text-gray-500 truncate">${exp.memo || ''}</p></div><button class="delete-expense-btn text-gray-400 hover:text-red-500 transition ml-2" data-id="${exp.id}"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>`;
+                listEl.appendChild(item);
+            });
+        };
+
+        const renderMainHistory = () => {
+            const listEl = document.getElementById('expense-history-list');
+            listEl.innerHTML = '';
+
+            const filteredExpenses = historyFilter === 'main'
+                ? currentBudget.expenses
+                : currentBudget.expenses.filter(e => e.category === historyFilter);
+
+            if (filteredExpenses.length === 0) {
+                listEl.innerHTML = `<p class="text-center text-gray-400">${historyFilter === 'main' ? 'まだ' : 'このカテゴリの'}支出はありません</p>`; return;
+            }
+            filteredExpenses.slice().sort((a,b) => b.id - a.id).forEach(exp => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-white/50 rounded-lg';
+                item.innerHTML = `<div class="flex-1 min-w-0"><p class="text-xs text-gray-400">${exp.date}</p><p class="font-semibold text-gray-800"><span class="font-bold text-sm text-white px-2 py-0.5 rounded-full mr-2" style="background-color:${getCategoryColor(exp.category)}">${exp.category}</span>${formatCurrency(exp.amount)}</p><p class="text-sm text-gray-500 truncate">${exp.memo || ''}</p></div><button class="delete-expense-btn text-gray-400 hover:text-red-500 transition ml-2" data-id="${exp.id}"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>`;
+                listEl.appendChild(item);
+            });
+        };
+
+        const renderChart = () => {
+            if (barChart) barChart.destroy();
+            if (!currentBudget) return;
+            
+            const canvas = document.getElementById('bar-chart');
+            
+            let dates = [];
+            const startDate = parseDateAsLocal(currentBudget.startDate);
+            const endDate = parseDateAsLocal(currentBudget.endDate);
+            
+            if (startDate <= endDate) {
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    dates.push(getTodayString(d));
+                }
+            } else if (currentBudget.endDate) {
+                dates.push(currentBudget.endDate);
+            }
+            
+            let chartData = {};
+            let chartOptions = { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            filter: (legendItem) => legendItem.text !== '1日の目安',
+                        }
+                    }
+                }
+            };
+            
+            if (chartView === 'main') {
+                const datasets = Object.keys(currentBudget.budgets).map(cat => ({
+                    label: cat,
+                    data: dates.map(date => currentBudget.expenses.filter(e => e.date === date && e.category === cat).reduce((sum, e) => sum + e.amount, 0)),
+                    backgroundColor: getCategoryColor(cat),
+                }));
+
+                const remainingDays = calculateRemainingDays(currentBudget.endDate);
+                const totalBudget = Object.values(currentBudget.budgets).reduce((sum, val) => sum + val, 0);
+                const totalExpenses = currentBudget.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+                const remainingAmount = totalBudget - totalExpenses;
+                const dailyAverage = (remainingDays > 0 && remainingAmount > 0) ? Math.floor(remainingAmount / remainingDays) : 0;
+                
+                datasets.push({
+                    label: '1日の目安',
+                    data: Array(dates.length).fill(dailyAverage),
+                    borderColor: '#333333',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    type: 'line',
+                    order: 0,
+                });
+
+                chartData = { labels: dates, datasets };
+                chartOptions.scales = { x: { stacked: true }, y: { stacked: true, beginAtZero: true } };
+                barChart = new Chart(canvas, { type: 'bar', data: chartData, options: chartOptions });
+            } else {
+                const remainingDays = calculateRemainingDays(currentBudget.endDate);
+                const categoryBudget = currentBudget.budgets[chartView] || 0;
+                const categoryExpenses = currentBudget.expenses.filter(e => e.category === chartView).reduce((sum, exp) => sum + exp.amount, 0);
+                const remainingAmount = categoryBudget - categoryExpenses;
+                const categoryDailyAverage = (remainingDays > 0 && remainingAmount > 0) ? Math.floor(remainingAmount / remainingDays) : 0;
+                const expenseData = dates.map(date => currentBudget.expenses.filter(e => e.date === date && e.category === chartView).reduce((sum, e) => sum + e.amount, 0));
+                
+                const datasets = [
+                    {
+                        label: chartView,
+                        data: expenseData,
+                        backgroundColor: getCategoryColor(chartView),
+                        type: 'bar',
+                        order: 2,
+                    },
+                    {
+                        label: '1日の目安',
+                        data: Array(dates.length).fill(categoryDailyAverage),
+                        borderColor: '#333333',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        type: 'line',
+                        order: 1,
+                    }
+                ];
+                chartData = { labels: dates, datasets };
+                chartOptions.scales = { y: { beginAtZero: true } };
+                barChart = new Chart(canvas, { data: chartData, options: chartOptions });
+            }
+        };
+        
+        const renderPastBudgets = () => {
+            pastBudgetsList.innerHTML = '';
+            if (pastBudgets.length === 0) {
+                 pastBudgetsList.innerHTML = '<p class="text-center text-gray-400">過去の記録はありません</p>'; return;
+            }
+            pastBudgets.slice().sort((a, b) => new Date(b.endDate) - new Date(a.endDate)).forEach(budget => {
+                const totalBudget = Object.values(budget.budgets).reduce((sum, val) => sum + val, 0);
+                const totalExpenses = budget.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+                const result = totalBudget - totalExpenses;
+                const achieved = result >= 0;
+                const item = document.createElement('div');
+                item.className = 'card p-4 rounded-lg';
+                item.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-bold text-gray-800">${budget.title}</p><p class="text-sm text-gray-500">${new Date(budget.endDate).toLocaleDateString('ja-JP')}まで</p></div><div class="text-right"><p class="font-bold ${achieved ? 'text-green-500' : 'text-red-500'}">${achieved ? '達成' : '未達成'}</p><p class="text-sm text-gray-600">${formatCurrency(result)}</p></div></div><button data-id="${budget.id}" class="export-csv-btn mt-2 w-full text-sm bg-gray-200 text-gray-700 py-1 rounded hover:bg-gray-300">スプレッドシートに出力</button>`;
+                pastBudgetsList.appendChild(item);
+            });
+        };
+        
+        const renderCumulativeResult = (target) => {
+             const resultEl = document.getElementById('cumulative-result');
+             const containerEl = document.getElementById('cumulative-result-container');
+             if (!currentBudget) return;
+
+             const startDate = parseDateAsLocal(currentBudget.startDate);
+             const endDate = parseDateAsLocal(currentBudget.endDate);
+             const today = new Date(); today.setHours(0,0,0,0);
+             const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+             if(today < startDate) {
+                 containerEl.classList.add('hidden');
+                 return;
+             }
+             
+             const totalDuration = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+             const daysPassed = Math.floor((yesterday - startDate) / (1000 * 60 * 60 * 24)) + 1;
+             
+             if (daysPassed < 1) {
+                 containerEl.classList.add('hidden');
+                 return;
+             }
+             
+             containerEl.classList.remove('hidden');
+
+             let cumulativeBudget = 0;
+             let cumulativeExpenses = 0;
+
+             if (target === 'main') {
+                 const totalBudget = Object.values(currentBudget.budgets).reduce((a, b) => a + b, 0);
+                 cumulativeBudget = totalDuration > 0 ? (totalBudget / totalDuration) * daysPassed : 0;
+                 cumulativeExpenses = currentBudget.expenses
+                     .filter(e => parseDateAsLocal(e.date) <= yesterday)
+                     .reduce((sum, e) => sum + e.amount, 0);
+             } else {
+                 const categoryBudget = currentBudget.budgets[target] || 0;
+                 cumulativeBudget = totalDuration > 0 ? (categoryBudget / totalDuration) * daysPassed : 0;
+                 cumulativeExpenses = currentBudget.expenses
+                     .filter(e => e.category === target && parseDateAsLocal(e.date) <= yesterday)
+                     .reduce((sum, e) => sum + e.amount, 0);
+             }
+
+             const difference = cumulativeBudget - cumulativeExpenses;
+             
+             resultEl.textContent = `${formatCurrency(Math.abs(difference))} ${difference >= 0 ? '節約' : '超過'}`;
+             resultEl.classList.remove('text-green-600', 'text-red-500');
+             resultEl.classList.add(difference >= 0 ? 'text-green-600' : 'text-red-500');
+        };
+
+        const updateProgressBar = (elementId, percentage) => {
+            const bar = document.getElementById(elementId);
+            bar.style.width = `${Math.max(0, percentage)}%`;
+            bar.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500');
+            if (percentage > 50) bar.classList.add('bg-green-500');
+            else if (percentage > 20) bar.classList.add('bg-yellow-500');
+            else bar.classList.add('bg-red-500');
+        };
+
+        const updateDailyReview = () => {
+            const reviewContentEl = document.getElementById('daily-review-content');
+            const reviewTitleEl = document.getElementById('daily-review-title');
+            const today = getTodayString();
+            
+            reviewTitleEl.textContent = `今日（${today.replace(/-/g, '/')}）の支出サマリ`;
+            
+            const todayExpensesTotal = currentBudget.expenses
+                .filter(e => e.date === today)
+                .reduce((sum, e) => sum + e.amount, 0);
+
+            const startDate = parseDateAsLocal(currentBudget.startDate);
+            const endDate = parseDateAsLocal(currentBudget.endDate);
+            const totalDuration = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+            let reviewHTML = '<ul class="space-y-2">';
+            let totalIdealDailySpend = 0;
+            
+            Object.entries(currentBudget.budgets).forEach(([category, budgetAmount]) => {
+                const idealDailySpend = totalDuration > 0 ? Math.floor(budgetAmount / totalDuration) : 0;
+                
+                const categoryTodayExpenses = currentBudget.expenses
+                    .filter(e => e.date === today && e.category === category)
+                    .reduce((sum, e) => sum + e.amount, 0);
+
+                totalIdealDailySpend += idealDailySpend;
+
+                if (idealDailySpend > 0 || categoryTodayExpenses > 0) {
+                     const difference = idealDailySpend - categoryTodayExpenses;
+                     const resultText = difference >= 0 
+                        ? `<span class="font-semibold text-green-600">${formatCurrency(difference)} 節約</span>`
+                        : `<span class="font-semibold text-red-500">${formatCurrency(Math.abs(difference))} 超過</span>`;
+                    
+                    reviewHTML += `<li class="flex justify-between items-center"><span>${category}</span> ${resultText}</li>`;
+                }
+            });
+
+            if (todayExpensesTotal > 0) {
+                 const totalDifference = totalIdealDailySpend - todayExpensesTotal;
+                 const totalResultText = totalDifference >= 0
+                    ? `<span class="font-bold text-green-600">${formatCurrency(totalDifference)} 節約</span>`
+                    : `<span class="font-bold text-red-500">${formatCurrency(Math.abs(totalDifference))} 超過</span>`;
+                reviewHTML += `<li class="flex justify-between items-center font-bold border-t pt-2 mt-2"><span>全体</span> ${totalResultText}</li>`;
+            } else {
+                 reviewHTML += `<li class="text-center text-gray-400 pt-2">今日の支出はありません</li>`;
+            }
+
+            reviewHTML += '</ul>';
+            reviewContentEl.innerHTML = reviewHTML;
+        };
+        
+        const updateActiveTabStyle = () => {
+             document.querySelectorAll('.tab').forEach(tab => {
+                if (tab.dataset.tab === activeTab) tab.classList.add('tab-active');
+                else tab.classList.remove('tab-active');
+            });
+        };
+        
+        const updateChartViewButtonStyles = () => {
+            document.querySelectorAll('.chart-tab').forEach(button => {
+                if (button.dataset.view === chartView) {
+                    button.classList.add('chart-tab-active');
+                } else {
+                    button.classList.remove('chart-tab-active');
+                }
+            });
+        };
+        
+        const updateHistoryFilterButtonStyles = () => {
+            document.querySelectorAll('.history-filter-tab').forEach(button => {
+                if (button.dataset.filter === historyFilter) {
+                    button.classList.add('history-filter-tab-active');
+                } else {
+                    button.classList.remove('history-filter-tab-active');
+                }
+            });
+        };
+
+        const getCategoryColor = (category) => {
+            if (!currentBudget || !currentBudget.budgets) return '#6b7280';
+            const categoryNames = Object.keys(currentBudget.budgets);
+            const index = categoryNames.indexOf(category);
+            const colors = [
+                '#3b82f6', // blue-600
+                '#10b981', // emerald-500
+                '#f59e0b', // amber-500
+                '#ec4899', // pink-500
+                '#8b5cf6', // violet-500
+                '#ef4444', // red-500
+                '#06b6d4'  // cyan-500
+            ];
+            return colors[index % colors.length];
+        };
+
+        // --- Tutorial Logic ---
+        const setupTutorial = () => {
+            const slides = tutorialScroller.querySelectorAll('.tutorial-slide');
+            tutorialDotsContainer.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'w-2 h-2 rounded-full transition-colors ' + (index === 0 ? 'bg-blue-600' : 'bg-gray-300');
+                tutorialDotsContainer.appendChild(dot);
+            });
+        };
+
+        const updateTutorialDots = () => {
+            const slides = tutorialScroller.querySelectorAll('.tutorial-slide');
+            const scrollLeft = tutorialScroller.scrollLeft;
+            const slideWidth = tutorialScroller.clientWidth;
+            const currentIndex = Math.round(scrollLeft / slideWidth);
+
+            tutorialDotsContainer.childNodes.forEach((dot, index) => {
+                dot.classList.toggle('bg-blue-600', index === currentIndex);
+                dot.classList.toggle('bg-gray-300', index !== currentIndex);
+            });
+        };
+
+        const showValidationError = (message) => {
+            validationMessageEl.innerHTML = message;
+            validationModal.classList.remove('hidden');
+        };
+
+        // --- Event Handlers ---
+        addCategoryBtn.addEventListener('click', () => createCategoryRow(''));
+        
+        newGoalSetupBtn.addEventListener('click', () => {
+            titleScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            renderSetupCategories();
+        });
+        
+        backToHomeBtn.addEventListener('click', () => {
+            setupScreen.classList.add('hidden');
+            titleScreen.classList.remove('hidden');
+        });
+
+        viewPastBudgetsTitleBtn.addEventListener('click', () => {
+             renderPastBudgets();
+             pastBudgetsModal.classList.remove('hidden');
+        });
+
+        setButton.addEventListener('click', () => {
+            const title = document.getElementById('title-input').value.trim();
+            const startDate = document.getElementById('start-date-input').value;
+            const endDate = document.getElementById('end-date-input').value;
+            
+            let errors = [];
+            if (!title) errors.push('タイトル');
+            if (!startDate) errors.push('開始日');
+            if (!endDate) errors.push('終了日');
+            
+            if (startDate && endDate && parseDateAsLocal(startDate) > parseDateAsLocal(endDate)) {
+                errors.push('終了日は開始日以降に設定してください');
+            }
+
+            const budgets = {};
+            const categoryNames = new Set();
+            
+            Array.from(categoriesContainer.children).forEach(row => {
+                const nameInput = row.querySelector('.category-name-input');
+                const name = nameInput.value.trim();
+                if (!name) {
+                    errors.push('空の予算種別名があります');
+                    return;
+                }
+                if (categoryNames.has(name)) {
+                    errors.push(`予算種別名「${name}」が重複しています`);
+                    return;
+                }
+                categoryNames.add(name);
+                const budgetInput = row.querySelector('.category-budget-input');
+                budgets[name] = parseInt(budgetInput.value || 0);
+            });
+
+            if (errors.length > 0) {
+                showValidationError(`以下を修正してください：<br>- ${errors.join('<br>- ')}`);
+                return;
+            }
+            
+            const expenses = currentBudget ? currentBudget.expenses : [];
+            const goalAchievedNotified = currentBudget ? currentBudget.goalAchievedNotified : false;
+            
+            currentBudget = { 
+                id: currentBudget ? currentBudget.id : Date.now(), 
+                title, 
+                startDate,
+                endDate, 
+                budgets, 
+                expenses,
+                goalAchievedNotified
+            };
+            
+            saveState();
+            activeTab = 'main';
+            chartView = 'main';
+            renderUI();
+        });
+
+        addExpenseButton.addEventListener('click', () => {
+            const amount = parseInt(document.getElementById('expense-amount-input').value);
+            const date = document.getElementById('expense-date-input').value;
+            const memo = document.getElementById('expense-memo-input').value;
+            if (!date || isNaN(amount) || amount <= 0) { 
+                showValidationError('日付と金額を正しく入力してください。');
+                return; 
+            }
+            currentBudget.expenses.push({ id: Date.now(), date, amount, category: activeTab, memo });
+            saveState();
+            activeTab = 'main';
+            renderUI();
+        });
+
+        const handleDeleteExpense = (e) => {
+            const deleteButton = e.target.closest('.delete-expense-btn');
+            if (deleteButton) {
+                const id = parseInt(deleteButton.dataset.id);
+                currentBudget.expenses = currentBudget.expenses.filter(exp => exp.id !== id);
+                saveState();
+                updateViewForTab(); 
+            }
+        };
+        
+        document.getElementById('expense-history-list').addEventListener('click', handleDeleteExpense);
+        document.getElementById('category-expense-history-list').addEventListener('click', handleDeleteExpense);
+        
+        editSettingsBtn.addEventListener('click', () => {
+            if (!currentBudget) return;
+            document.getElementById('title-input').value = currentBudget.title;
+            document.getElementById('start-date-input').value = currentBudget.startDate;
+            document.getElementById('end-date-input').value = currentBudget.endDate;
+            renderSetupCategories(currentBudget.budgets);
+            mainScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+        });
+
+        resetButton.addEventListener('click', () => resetModal.classList.remove('hidden'));
+        cancelResetBtn.addEventListener('click', () => resetModal.classList.add('hidden'));
+        confirmResetBtn.addEventListener('click', () => {
+            if (currentBudget) {
+                pastBudgets.push(currentBudget);
+                currentBudget = null;
+                saveState();
+                renderUI();
+            }
+            resetModal.classList.add('hidden');
+        });
+        
+        closePastBudgetsBtn.addEventListener('click', () => pastBudgetsModal.classList.add('hidden'));
+        closeValidationModalBtn.addEventListener('click', () => validationModal.classList.add('hidden'));
+
+        pastBudgetsList.addEventListener('click', e => {
+            if (e.target.classList.contains('export-csv-btn')) {
+                const budgetId = parseInt(e.target.dataset.id);
+                const budget = pastBudgets.find(b => b.id === budgetId);
+                if (!budget) return;
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF予算種別,日付,金額,メモ\n";
+                budget.expenses.forEach(exp => {
+                    const memo = exp.memo ? exp.memo.replace(/"/g, '""') : '';
+                    csvContent += `${exp.category},${exp.date},${exp.amount},"${memo}"\n`;
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `${budget.title}_支出データ.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+        
+        newGoalBtn.addEventListener('click', () => {
+            if(currentBudget) pastBudgets.push(currentBudget);
+            currentBudget = null;
+            saveState();
+            renderUI();
+            goalAchievedModal.classList.add('hidden');
+        });
+        closeGoalModalBtn.addEventListener('click', () => goalAchievedModal.classList.add('hidden'));
+
+        // Tutorial Event Listeners
+        howToUseLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            tutorialModal.classList.remove('hidden');
+        });
+
+        closeTutorialBtn.addEventListener('click', () => {
+            tutorialModal.classList.add('hidden');
+        });
+
+        tutorialScroller.addEventListener('scroll', updateTutorialDots);
+
+        // --- Initialization ---
+        loadState();
+        renderUI();
+        setupTutorial();
+    });
+    </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
