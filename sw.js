@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jibun-yosan-cache-v1';
+const CACHE_NAME = 'jibun-yosan-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
