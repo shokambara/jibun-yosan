@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>じぶん予算</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0d9488">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,6 +112,10 @@
         .tutorial-scroller::-webkit-scrollbar { display: none; }
         .tutorial-scroller { -ms-overflow-style: none; scrollbar-width: none; }
         .tutorial-slide { scroll-snap-align: start; }
+        .input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4) !important;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-cyan-50 to-emerald-100 min-h-screen">
@@ -124,7 +126,7 @@
         <div id="title-screen" class="space-y-6 fade-in">
              <div class="text-center pt-8 pb-8">
                 <div class="w-36 h-36 bg-gray-200/50 rounded-3xl mx-auto mb-8 flex items-center justify-center border border-gray-300/50">
-                    <img src="web-app-manifest-512x512.png" alt="じぶん予算ロゴ" class="w-full h-full object-contain rounded-3xl">
+                    <!-- ロゴ画像は後からここに挿入します -->
                 </div>
                 <h1 class="text-4xl font-bold text-gray-800" style="font-family: 'Noto Sans JP', sans-serif;">じぶん予算</h1>
                 <div class="mt-4 text-gray-600">
@@ -213,23 +215,29 @@
                 </div>
                 <div class="grid grid-cols-3 gap-2 text-center pt-4 border-t border-gray-200">
                     <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                         <p class="text-xs text-gray-500">残り日数</p>
                         <p id="remaining-days" class="text-xl font-bold text-gray-700"></p>
                     </div>
                     <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                        </svg>
                         <p class="text-xs text-gray-500">終了日</p>
                         <p id="target-date" class="text-xl font-bold text-gray-700"></p>
                     </div>
                     <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.158-.103.346-.196.552-.257m.046-.012a3 3 0 011.938 0l.046.012M8.985 7.161a3 3 0 00-1.938 0l-.046.012M10 2a8 8 0 100 16 8 8 0 000-16zM5.12 7.12a5.02 5.02 0 016.23-1.84M14.88 12.88a5.02 5.02 0 01-6.23 1.84" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 8l3 5m0 0l3-5m-3 5v4m-3-5h6m-6 3h6m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         <p class="text-xs text-gray-500">1日の目安</p>
                         <p id="daily-average" class="text-xl font-bold text-gray-700"></p>
                     </div>
                 </div>
                 <div id="cumulative-result-container" class="text-center pt-4 mt-4 border-t border-gray-200">
-                     <p class="text-xs text-gray-500">ここまでの累計</p>
+                     <p class="text-xs text-gray-500">前日までの累計</p>
                      <p id="cumulative-result" class="text-xl font-bold text-gray-700"></p>
                 </div>
             </div>
@@ -247,6 +255,15 @@
                         <div id="bar-chart-container" class="relative h-64">
                             <canvas id="bar-chart"></canvas>
                         </div>
+                    </div>
+                </div>
+                 <div class="card p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                         <h2 class="text-lg font-semibold text-gray-700">支出割合</h2>
+                         <p id="pie-chart-date" class="text-sm text-gray-500"></p>
+                    </div>
+                    <div id="pie-chart-container" class="relative h-64">
+                        <canvas id="pie-chart"></canvas>
                     </div>
                 </div>
                 <div class="card p-6 rounded-2xl">
@@ -267,7 +284,10 @@
             <!-- カテゴリタブコンテンツ -->
             <div id="category-tab-content" class="hidden space-y-6">
                 <div class="card p-6 rounded-2xl space-y-4">
-                    <h2 id="expense-form-title" class="text-lg font-semibold text-gray-700"></h2>
+                    <div class="flex justify-between items-center">
+                        <h2 id="expense-form-title" class="text-lg font-semibold text-gray-700"></h2>
+                        <button id="quick-expense-btn" class="text-sm text-teal-600 font-semibold bg-teal-100/50 px-3 py-1 rounded-lg hover:bg-teal-100 transition">履歴から入力</button>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><label class="block text-sm font-medium text-gray-600 mb-1">日付</label><input type="date" id="expense-date-input" class="w-full px-4 py-2 bg-white/50 border border-gray-300 rounded-lg"></div>
                         <div><label class="block text-sm font-medium text-gray-600 mb-1">金額</label><input type="number" id="expense-amount-input" placeholder="使った金額" class="w-full px-4 py-2 bg-white/50 border border-gray-300 rounded-lg"></div>
@@ -290,9 +310,11 @@
     
     <!-- Modals -->
     <div id="past-budgets-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-md"><h2 class="text-xl font-bold text-gray-800 mb-6 text-center">過去の予算</h2><div id="past-budgets-list" class="space-y-4 max-h-96 overflow-y-auto"></div><div class="mt-6 text-center"><button id="close-past-budgets-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">閉じる</button></div></div></div>
-    <div id="reset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-xl font-bold text-gray-800 mb-4">確認</h2><p class="text-gray-600 mb-8">現在の予算をアーカイブしますか？</p><div class="flex justify-center gap-4"><button id="confirm-reset-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg">はい</button><button id="cancel-reset-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">いいえ</button></div></div></div>
-    <div id="goal-achieved-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-2xl font-bold text-teal-500 mb-4">目標達成！🎉</h2><p class="text-gray-600 mb-8">素晴らしい！最後までやり遂げたあなたの努力が、見事な結果に繋がりました。</p><div class="flex justify-center gap-4"><button id="new-goal-btn" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-2 px-6 rounded-lg">新しい予算へ</button><button id="close-goal-modal-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">閉じる</button></div></div></div>
+    <div id="past-budget-details-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-6 rounded-2xl w-full max-w-md space-y-4"><div class="flex justify-between items-start"><div class="flex-grow"><h2 id="past-details-title" class="text-xl font-bold text-gray-800"></h2><p id="past-details-period" class="text-sm text-gray-500"></p></div><button id="close-past-details-btn" class="text-gray-400 hover:text-gray-600">&times;</button></div><div class="text-center bg-gray-100 p-4 rounded-lg"><p class="text-xs text-gray-500">最終結果</p><p id="past-details-result" class="text-2xl font-bold"></p></div><div class="relative h-48"><canvas id="past-pie-chart"></canvas></div><div class="border-t pt-2"><h3 class="text-md font-semibold text-gray-700 mb-2">支出履歴</h3><div id="past-details-expense-list" class="space-y-2 max-h-48 overflow-y-auto pr-2"></div></div></div></div>
+    <div id="reset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-xl font-bold text-gray-800 mb-4">確認</h2><p class="text-gray-600 mb-6">現在の予算をアーカイブしますか？</p><p class="text-xs text-gray-500 mb-8">ホーム画面の「過去の予算を見る」ボタンから復元することが可能です。</p><div class="flex justify-center gap-4"><button id="confirm-reset-btn" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg">はい</button><button id="cancel-reset-btn" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">いいえ</button></div></div></div>
+    <div id="goal-achieved-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 id="result-title" class="text-2xl font-bold text-teal-500 mb-4"></h2><p id="result-message" class="text-gray-600 mb-8"></p><div class="flex justify-center gap-4"><button id="new-goal-btn" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-2 px-6 rounded-lg">次の予算を作成する</button></div></div></div>
     <div id="validation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-8 rounded-2xl w-full max-w-sm text-center"><h2 class="text-xl font-bold text-red-500 mb-4">入力エラー</h2><p id="validation-message" class="text-gray-600 mb-8"></p><div class="flex justify-center"><button id="close-validation-modal-btn" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-2 px-6 rounded-lg">OK</button></div></div></div>
+    <div id="quick-expense-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in"><div class="card p-6 rounded-2xl w-full max-w-sm"><h2 class="text-lg font-bold text-gray-800 mb-4">履歴から入力</h2><div id="quick-expense-list" class="space-y-2 max-h-64 overflow-y-auto"></div><div class="mt-4 text-right"><button id="close-quick-expense-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg">閉じる</button></div></div></div>
     
     <!-- Tutorial Modal -->
     <div id="tutorial-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden z-50 fade-in">
@@ -349,6 +371,9 @@
         const pastBudgetsModal = document.getElementById('past-budgets-modal');
         const closePastBudgetsBtn = document.getElementById('close-past-budgets-btn');
         const pastBudgetsList = document.getElementById('past-budgets-list');
+        const pastBudgetDetailsModal = document.getElementById('past-budget-details-modal');
+        const closePastDetailsBtn = document.getElementById('close-past-details-btn');
+        
         const setButton = document.getElementById('set-button');
         const resetButton = document.getElementById('reset-button');
         const editSettingsBtn = document.getElementById('edit-settings-btn');
@@ -357,7 +382,6 @@
         const cancelResetBtn = document.getElementById('cancel-reset-btn');
         const goalAchievedModal = document.getElementById('goal-achieved-modal');
         const newGoalBtn = document.getElementById('new-goal-btn');
-        const closeGoalModalBtn = document.getElementById('close-goal-modal-btn');
         const validationModal = document.getElementById('validation-modal');
         const closeValidationModalBtn = document.getElementById('close-validation-modal-btn');
         const validationMessageEl = document.getElementById('validation-message');
@@ -367,6 +391,14 @@
         const categoryTabsContainer = document.getElementById('category-tabs-container');
         const chartViewButtonsContainer = document.getElementById('chart-view-buttons');
         const historyFilterButtonsContainer = document.getElementById('history-filter-buttons');
+        const quickExpenseModal = document.getElementById('quick-expense-modal');
+        const quickExpenseBtn = document.getElementById('quick-expense-btn');
+        const closeQuickExpenseBtn = document.getElementById('close-quick-expense-btn');
+        const quickExpenseList = document.getElementById('quick-expense-list');
+        const pieChartContainer = document.getElementById('pie-chart-container');
+        const titleInput = document.getElementById('title-input');
+        const startDateInput = document.getElementById('start-date-input');
+        const endDateInput = document.getElementById('end-date-input');
         
         // Tutorial Modal Elements
         const tutorialModal = document.getElementById('tutorial-modal');
@@ -382,7 +414,9 @@
         let activeTab = 'main';
         let chartView = 'main';
         let barChart = null;
+        let pieChart = null;
         let historyFilter = 'main';
+        let pastDetailsPieChart = null;
 
         // --- Utility Functions ---
         const getTodayString = (date = new Date()) => {
@@ -439,7 +473,7 @@
             div.innerHTML = `
                 <div class="flex justify-between items-center">
                     <div class="flex-grow mr-2">
-                        <input type="text" value="${name}" placeholder="${placeholder}" class="category-name-input w-full text-sm font-medium text-gray-600 bg-transparent focus:outline-none focus:border-b focus:border-cyan-500">
+                        <input type="text" value="${name}" placeholder="${placeholder}" class="category-name-input w-full px-3 py-2 bg-white/50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
                     </div>
                     <div class="relative">
                         <span class="absolute left-3 inset-y-0 flex items-center text-gray-500 text-sm">¥</span>
@@ -453,6 +487,9 @@
             `;
             const numInput = div.querySelector('.category-budget-input');
             const sliderInput = div.querySelector('.category-budget-slider');
+            const nameInput = div.querySelector('.category-name-input');
+            
+            nameInput.addEventListener('input', () => nameInput.classList.remove('input-error'));
             
             const syncAndUpdate = () => {
                 updateSliderTrack(sliderInput);
@@ -549,6 +586,11 @@
         // --- Rendering Functions ---
         const renderUI = () => {
             if (currentBudget) {
+                const today = getTodayString();
+                if (currentBudget.endDate < today && !currentBudget.archived) {
+                    showResultScreen();
+                    return;
+                }
                 titleScreen.classList.add('hidden');
                 setupScreen.classList.add('hidden');
                 mainScreen.classList.remove('hidden');
@@ -577,6 +619,7 @@
                 categoryTabContent.classList.add('hidden');
                 chartView = 'main';
                 renderChart();
+                renderPieChart();
                 historyFilter = 'main';
                 renderHistoryFilterButtons();
                 renderMainHistory();
@@ -605,11 +648,6 @@
             updateProgressBar('progress-bar', progress);
             updateDailyReview();
             renderCumulativeResult('main');
-            if (remainingDays === 1 && parseDateAsLocal(currentBudget.endDate).getTime() === new Date(new Date().setHours(0,0,0,0)).getTime() && remainingAmount >= 0 && !currentBudget.goalAchievedNotified) {
-                 goalAchievedModal.classList.remove('hidden');
-                 currentBudget.goalAchievedNotified = true;
-                 saveState();
-            }
         };
         
         const renderCategorySummary = () => {
@@ -699,6 +737,20 @@
                         labels: {
                             filter: (legendItem) => legendItem.text !== '1日の目安',
                         }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
                     }
                 }
             };
@@ -765,6 +817,62 @@
             }
         };
         
+        const renderPieChart = () => {
+            if (pieChart) pieChart.destroy();
+            const canvas = document.getElementById('pie-chart');
+            const today = getTodayString();
+            document.getElementById('pie-chart-date').textContent = `今日（${today.replace(/-/g, '/')}）時点`;
+
+            const labels = Object.keys(currentBudget.budgets);
+            const data = labels.map(label => 
+                currentBudget.expenses
+                    .filter(exp => exp.category === label)
+                    .reduce((sum, exp) => sum + exp.amount, 0)
+            );
+            
+            const totalExpenses = data.reduce((sum, d) => sum + d, 0);
+            if(totalExpenses === 0){
+                pieChartContainer.innerHTML = '<p class="text-center text-gray-400 h-full flex items-center justify-center">まだ支出はありません</p>';
+                return;
+            }
+            
+            pieChartContainer.innerHTML = '<canvas id="pie-chart"></canvas>'; // Re-create canvas
+            const newCanvas = document.getElementById('pie-chart');
+
+
+            pieChart = new Chart(newCanvas, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: labels.map(label => getCategoryColor(label)),
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        };
+        
         const renderPastBudgets = () => {
             pastBudgetsList.innerHTML = '';
             if (pastBudgets.length === 0) {
@@ -777,7 +885,7 @@
                 const achieved = result >= 0;
                 const item = document.createElement('div');
                 item.className = 'card p-4 rounded-lg';
-                item.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-bold text-gray-800">${budget.title}</p><p class="text-sm text-gray-500">${new Date(budget.endDate).toLocaleDateString('ja-JP')}まで</p></div><div class="text-right"><p class="font-bold ${achieved ? 'text-green-500' : 'text-red-500'}">${achieved ? '達成' : '未達成'}</p><p class="text-sm text-gray-600">${formatCurrency(result)}</p></div></div><button data-id="${budget.id}" class="export-csv-btn mt-2 w-full text-sm bg-gray-200 text-gray-700 py-1 rounded hover:bg-gray-300">スプレッドシートに出力</button>`;
+                item.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-bold text-gray-800">${budget.title}</p><p class="text-sm text-gray-500">${new Date(budget.endDate).toLocaleDateString('ja-JP')}まで</p></div><div class="text-right"><p class="font-bold ${achieved ? 'text-green-500' : 'text-red-500'}">${achieved ? '達成' : '未達成'}</p><p class="text-sm text-gray-600">${formatCurrency(result)}</p></div></div><div class="flex space-x-2 mt-2"><button data-id="${budget.id}" class="restore-budget-btn w-full text-sm bg-blue-100 text-blue-700 py-1 rounded hover:bg-blue-200">復元</button><button data-id="${budget.id}" class="export-csv-btn w-full text-sm bg-gray-200 text-gray-700 py-1 rounded hover:bg-gray-300">出力</button></div>`;
                 pastBudgetsList.appendChild(item);
             });
         };
@@ -961,6 +1069,29 @@
             validationMessageEl.innerHTML = message;
             validationModal.classList.remove('hidden');
         };
+        
+        const showResultScreen = () => {
+            const totalBudget = Object.values(currentBudget.budgets).reduce((a, b) => a + b, 0);
+            const totalExpenses = currentBudget.expenses.reduce((a, b) => a + b.amount, 0);
+            const difference = totalBudget - totalExpenses;
+            
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+
+            if (difference >= 0) {
+                resultTitle.textContent = '予算達成！🎉';
+                resultMessage.textContent = `素晴らしい！${formatCurrency(difference)}の節約に成功しました。この経験を次の計画に活かしましょう。`;
+                resultTitle.classList.remove('text-red-500');
+                resultTitle.classList.add('text-teal-500');
+            } else {
+                resultTitle.textContent = '予算オーバー';
+                resultMessage.textContent = `今回は${formatCurrency(Math.abs(difference))}の超過でした。この結果を振り返り、次の計画に活かしましょう。`;
+                resultTitle.classList.remove('text-teal-500');
+                resultTitle.classList.add('text-red-500');
+            }
+            goalAchievedModal.classList.remove('hidden');
+            currentBudget.archived = true; 
+        };
 
         // --- Event Handlers ---
         addCategoryBtn.addEventListener('click', () => createCategoryRow(''));
@@ -982,17 +1113,20 @@
         });
 
         setButton.addEventListener('click', () => {
-            const title = document.getElementById('title-input').value.trim();
-            const startDate = document.getElementById('start-date-input').value;
-            const endDate = document.getElementById('end-date-input').value;
+            document.querySelectorAll('#setup-screen input.input-error').forEach(el => el.classList.remove('input-error'));
+            
+            const title = titleInput.value.trim();
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
             
             let errors = [];
-            if (!title) errors.push('タイトル');
-            if (!startDate) errors.push('開始日');
-            if (!endDate) errors.push('終了日');
+            if (!title) { errors.push('タイトル'); titleInput.classList.add('input-error'); }
+            if (!startDate) { errors.push('開始日'); startDateInput.classList.add('input-error');}
+            if (!endDate) { errors.push('終了日'); endDateInput.classList.add('input-error');}
             
             if (startDate && endDate && parseDateAsLocal(startDate) > parseDateAsLocal(endDate)) {
                 errors.push('終了日は開始日以降に設定してください');
+                endDateInput.classList.add('input-error');
             }
 
             const budgets = {};
@@ -1002,11 +1136,13 @@
                 const nameInput = row.querySelector('.category-name-input');
                 const name = nameInput.value.trim();
                 if (!name) {
-                    errors.push('空の予算種別名があります');
+                    errors.push('空の予算カテゴリ名があります');
+                    nameInput.classList.add('input-error');
                     return;
                 }
                 if (categoryNames.has(name)) {
-                    errors.push(`予算種別名「${name}」が重複しています`);
+                    errors.push(`予算カテゴリ名「${name}」が重複しています`);
+                    nameInput.classList.add('input-error');
                     return;
                 }
                 categoryNames.add(name);
@@ -1037,20 +1173,65 @@
             chartView = 'main';
             renderUI();
         });
+        
+        titleInput.addEventListener('input', () => titleInput.classList.remove('input-error'));
+        startDateInput.addEventListener('input', () => startDateInput.classList.remove('input-error'));
+        endDateInput.addEventListener('input', () => endDateInput.classList.remove('input-error'));
 
         addExpenseButton.addEventListener('click', () => {
-            const amount = parseInt(document.getElementById('expense-amount-input').value);
-            const date = document.getElementById('expense-date-input').value;
-            const memo = document.getElementById('expense-memo-input').value;
-            if (!date || isNaN(amount) || amount <= 0) { 
-                showValidationError('日付と金額を正しく入力してください。');
-                return; 
+            const amountInput = document.getElementById('expense-amount-input');
+            const dateInput = document.getElementById('expense-date-input');
+            const memoInput = document.getElementById('expense-memo-input');
+
+            amountInput.classList.remove('input-error');
+            dateInput.classList.remove('input-error');
+
+            const amount = parseInt(amountInput.value);
+            const date = dateInput.value;
+            const memo = memoInput.value;
+
+            let errors = [];
+            if (!date) { errors.push('日付'); dateInput.classList.add('input-error'); }
+            if (isNaN(amount) || amount <= 0) { errors.push('金額'); amountInput.classList.add('input-error'); }
+            
+            if (errors.length > 0) {
+                showValidationError(`${errors.join('と')}を正しく入力してください。`);
+                return;
             }
+
             currentBudget.expenses.push({ id: Date.now(), date, amount, category: activeTab, memo });
             saveState();
-            activeTab = 'main';
-            renderUI();
+            
+            amountInput.value = '';
+            memoInput.value = '';
+            amountInput.focus();
+            updateViewForTab();
         });
+
+        quickExpenseBtn.addEventListener('click', () => {
+            quickExpenseList.innerHTML = '';
+            const categoryExpenses = currentBudget.expenses.filter(e => e.category === activeTab);
+            const uniqueExpenses = [...new Map(categoryExpenses.map(item => [`${item.memo}:${item.amount}`, item])).values()];
+
+            if(uniqueExpenses.length === 0) {
+                quickExpenseList.innerHTML = '<p class="text-center text-gray-500">このカテゴリの履歴がまだありません。</p>';
+            } else {
+                 uniqueExpenses.slice(0, 10).forEach(exp => {
+                    const item = document.createElement('button');
+                    item.className = 'w-full text-left p-2 bg-gray-100 rounded-md hover:bg-gray-200';
+                    item.innerHTML = `<span class="font-semibold">${formatCurrency(exp.amount)}</span> <span class="text-gray-600">${exp.memo}</span>`;
+                    item.onclick = () => {
+                        document.getElementById('expense-amount-input').value = exp.amount;
+                        document.getElementById('expense-memo-input').value = exp.memo;
+                        document.getElementById('expense-date-input').value = '';
+                        quickExpenseModal.classList.add('hidden');
+                    };
+                    quickExpenseList.appendChild(item);
+                });
+            }
+            quickExpenseModal.classList.remove('hidden');
+        });
+        closeQuickExpenseBtn.addEventListener('click', () => quickExpenseModal.classList.add('hidden'));
 
         const handleDeleteExpense = (e) => {
             const deleteButton = e.target.closest('.delete-expense-btn');
@@ -1079,6 +1260,7 @@
         cancelResetBtn.addEventListener('click', () => resetModal.classList.add('hidden'));
         confirmResetBtn.addEventListener('click', () => {
             if (currentBudget) {
+                currentBudget.archived = true;
                 pastBudgets.push(currentBudget);
                 currentBudget = null;
                 saveState();
@@ -1091,10 +1273,11 @@
         closeValidationModalBtn.addEventListener('click', () => validationModal.classList.add('hidden'));
 
         pastBudgetsList.addEventListener('click', e => {
+            const budgetId = parseInt(e.target.dataset.id);
+            const budget = pastBudgets.find(b => b.id === budgetId);
+            if (!budget) return;
+
             if (e.target.classList.contains('export-csv-btn')) {
-                const budgetId = parseInt(e.target.dataset.id);
-                const budget = pastBudgets.find(b => b.id === budgetId);
-                if (!budget) return;
                 let csvContent = "data:text/csv;charset=utf-8,\uFEFF予算種別,日付,金額,メモ\n";
                 budget.expenses.forEach(exp => {
                     const memo = exp.memo ? exp.memo.replace(/"/g, '""') : '';
@@ -1107,17 +1290,39 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            } else if (e.target.classList.contains('restore-budget-btn')) {
+                if (currentBudget && !currentBudget.archived) {
+                    showValidationError('現在実行中の予算があります。<br>アーカイブしてから復元してください。');
+                    return;
+                }
+                currentBudget = budget;
+                currentBudget.archived = false;
+                currentBudget.goalAchievedNotified = false;
+                pastBudgets = pastBudgets.filter(b => b.id !== budgetId);
+                saveState();
+                renderUI();
+                pastBudgetsModal.classList.add('hidden');
+            } else if (e.target.classList.contains('view-past-details-btn')) {
+                // This would be the logic for showing a past budget summary
+                // For now, let's just log it to show it works
+                console.log("Viewing details for:", budget);
+                showValidationError(`「${budget.title}」の詳細表示機能は現在開発中です。`);
             }
         });
         
         newGoalBtn.addEventListener('click', () => {
-            if(currentBudget) pastBudgets.push(currentBudget);
-            currentBudget = null;
-            saveState();
-            renderUI();
+            if(currentBudget) {
+                if (!pastBudgets.some(b => b.id === currentBudget.id)) {
+                    pastBudgets.push(currentBudget);
+                }
+                currentBudget = null;
+                saveState();
+            }
             goalAchievedModal.classList.add('hidden');
+            titleScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
+            renderSetupCategories();
         });
-        closeGoalModalBtn.addEventListener('click', () => goalAchievedModal.classList.add('hidden'));
 
         // Tutorial Event Listeners
         howToUseLink.addEventListener('click', (e) => {
@@ -1137,17 +1342,6 @@
         setupTutorial();
     });
     </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      }, err => {
-        console.log('ServiceWorker registration failed: ', err);
-      });
-    });
-  }
-</script>
-
 </body>
 </html>
+
