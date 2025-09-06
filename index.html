@@ -125,20 +125,20 @@
         <!-- タイトル画面 -->
         <div id="title-screen" class="space-y-6 fade-in">
              <div class="text-center pt-8 pb-8">
-              <img src="/web-app-manifest-192x192.png" alt="じぶん予算 ロゴ" class="block mx-auto mb-4 h-24 w-24 rounded-3xl">
-                <h1 class="text-4xl font-bold text-gray-800">じぶん予算</h1>
-                <div class="mt-4 text-gray-600">
-                    <p class="font-semibold">計画、記録、振り返り。</p>
-                    <p class="text-sm">シンプルなサイクルで暮らしを整えるじぶんだけの予算管理アプリ。</p>
-                </div>
-            </div>
-            <div class="space-y-4">
-                 <div>
-                    <button id="new-goal-setup-btn" class="w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all transform hover:scale-105 shadow-lg">じぶん予算をはじめる</button>
-                    <a href="#" id="how-to-use-link" class="block text-center text-sm text-gray-500 hover:text-teal-600 mt-3">使い方を見る</a>
+                <img src="https://placehold.co/192x192/ffffff/333333?text=Budget" alt="じぶん予算 ロゴ" class="block mx-auto mb-4 h-24 w-24 rounded-3xl">
+                 <h1 class="text-4xl font-bold text-gray-800">じぶん予算</h1>
+                 <div class="mt-4 text-gray-600">
+                     <p class="font-semibold">計画、記録、振り返り。</p>
+                     <p class="text-sm">シンプルなサイクルで暮らしを整えるじぶんだけの予算管理アプリ。</p>
                  </div>
+             </div>
+             <div class="space-y-4">
+                  <div>
+                     <button id="new-goal-setup-btn" class="w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all transform hover:scale-105 shadow-lg">じぶん予算をはじめる</button>
+                     <a href="#" id="how-to-use-link" class="block text-center text-sm text-gray-500 hover:text-teal-600 mt-3">使い方を見る</a>
+                  </div>
                  <button id="view-past-budgets-title-btn" class="w-full bg-white text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition shadow">過去の予算を見る</button>
-            </div>
+             </div>
         </div>
 
         <!-- 初期設定画面 -->
@@ -192,13 +192,13 @@
             <h1 id="main-title" class="text-2xl font-bold text-center text-gray-700"></h1>
             
              <div class="space-y-2">
-                <div class="flex space-x-2">
-                    <button data-tab="main" class="tab flex-none px-6 py-3 font-semibold text-sm text-gray-700 bg-white rounded-lg shadow">サマリー</button>
-                    <div id="category-tabs-container" class="flex-1 flex items-center space-x-2 bg-gray-200/50 p-1 rounded-lg overflow-x-auto custom-scrollbar">
-                        <!-- Dynamic tabs will be inserted here -->
-                    </div>
-                </div>
-            </div>
+                 <div class="flex space-x-2">
+                     <button data-tab="main" class="tab flex-none px-6 py-3 font-semibold text-sm text-gray-700 bg-white rounded-lg shadow">サマリー</button>
+                     <div id="category-tabs-container" class="flex-1 flex items-center space-x-2 bg-gray-200/50 p-1 rounded-lg overflow-x-auto custom-scrollbar">
+                         <!-- Dynamic tabs will be inserted here -->
+                     </div>
+                 </div>
+             </div>
 
             <!-- サマリーカード -->
             <div id="summary-card" class="card p-6 rounded-2xl">
@@ -243,27 +243,33 @@
             <!-- メインタブコンテンツ -->
             <div id="main-tab-content" class="space-y-6">
                  <div id="charts-card" class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-center mb-4">
+                     <div class="flex justify-between items-center mb-4">
                          <h2 class="text-lg font-semibold text-gray-700">日別支出</h2>
                          <div id="chart-view-buttons" class="flex space-x-1 bg-gray-200 p-0.5 rounded-md text-xs">
                              <!-- Chart view buttons will be inserted here -->
                          </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <div id="bar-chart-container" class="relative h-64">
-                            <canvas id="bar-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
+                     </div>
+                     <div class="overflow-x-auto">
+                         <div id="bar-chart-container" class="relative h-64">
+                             <canvas id="bar-chart"></canvas>
+                         </div>
+                     </div>
+                 </div>
                  <div class="card p-6 rounded-2xl">
-                    <div class="flex justify-between items-center mb-4">
-                         <h2 class="text-lg font-semibold text-gray-700">支出割合</h2>
-                         <p id="pie-chart-date" class="text-sm text-gray-500"></p>
-                    </div>
-                    <div id="pie-chart-container" class="relative h-64">
-                        <canvas id="pie-chart"></canvas>
-                    </div>
-                </div>
+                     <div class="mb-4">
+                         <div class="flex justify-between items-baseline">
+                             <h2 class="text-lg font-semibold text-gray-700">支出割合</h2>
+                             <p id="pie-chart-date" class="text-sm text-gray-500"></p>
+                         </div>
+                         <div id="pie-chart-summary" class="text-center mt-2 hidden">
+                             <p class="text-xs text-gray-500">合計支出額</p>
+                             <p id="pie-chart-total-spent" class="text-3xl font-bold text-gray-800"></p>
+                         </div>
+                     </div>
+                     <div id="pie-chart-container" class="relative h-64">
+                         <canvas id="pie-chart"></canvas>
+                     </div>
+                 </div>
                 <div class="card p-6 rounded-2xl">
                     <h2 id="daily-review-title" class="text-lg font-semibold text-gray-700 mb-3"></h2>
                     <div id="daily-review-content" class="text-sm text-gray-600 space-y-2"></div>
@@ -478,8 +484,8 @@
                         <input type="number" value="${budget}" class="category-budget-input w-32 text-right pl-7 pr-2 py-1 bg-white/50 border border-gray-300 rounded-lg">
                     </div>
                      <button class="remove-category-btn text-gray-400 hover:text-red-500 ml-2 p-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                     </button>
                 </div>
                 <input type="range" value="${budget}" min="0" max="100000" step="5000" class="category-budget-slider w-full">
             `;
@@ -828,12 +834,20 @@
                     .reduce((sum, exp) => sum + exp.amount, 0)
             );
             
+            const pieChartSummary = document.getElementById('pie-chart-summary');
+            const pieChartTotalSpent = document.getElementById('pie-chart-total-spent');
             const totalExpenses = data.reduce((sum, d) => sum + d, 0);
+
             if(totalExpenses === 0){
                 pieChartContainer.innerHTML = '<p class="text-center text-gray-400 h-full flex items-center justify-center">まだ支出はありません</p>';
+                pieChartSummary.classList.add('hidden'); // Hide summary
                 return;
             }
             
+            // Update and show summary
+            pieChartTotalSpent.textContent = formatCurrency(totalExpenses);
+            pieChartSummary.classList.remove('hidden');
+
             pieChartContainer.innerHTML = '<canvas id="pie-chart"></canvas>'; // Re-create canvas
             const newCanvas = document.getElementById('pie-chart');
 
@@ -976,18 +990,18 @@
                 if (idealDailySpend > 0 || categoryTodayExpenses > 0) {
                      const difference = idealDailySpend - categoryTodayExpenses;
                      const resultText = difference >= 0 
-                        ? `<span class="font-semibold text-green-600">${formatCurrency(difference)} 節約</span>`
-                        : `<span class="font-semibold text-red-500">${formatCurrency(Math.abs(difference))} 超過</span>`;
-                    
-                    reviewHTML += `<li class="flex justify-between items-center"><span>${category}</span> ${resultText}</li>`;
+                         ? `<span class="font-semibold text-green-600">${formatCurrency(difference)} 節約</span>`
+                         : `<span class="font-semibold text-red-500">${formatCurrency(Math.abs(difference))} 超過</span>`;
+                     
+                     reviewHTML += `<li class="flex justify-between items-center"><span>${category}</span> ${resultText}</li>`;
                 }
             });
 
             if (todayExpensesTotal > 0) {
                  const totalDifference = totalIdealDailySpend - todayExpensesTotal;
                  const totalResultText = totalDifference >= 0
-                    ? `<span class="font-bold text-green-600">${formatCurrency(totalDifference)} 節約</span>`
-                    : `<span class="font-bold text-red-500">${formatCurrency(Math.abs(totalDifference))} 超過</span>`;
+                     ? `<span class="font-bold text-green-600">${formatCurrency(totalDifference)} 節約</span>`
+                     : `<span class="font-bold text-red-500">${formatCurrency(Math.abs(totalDifference))} 超過</span>`;
                 reviewHTML += `<li class="flex justify-between items-center font-bold border-t pt-2 mt-2"><span>全体</span> ${totalResultText}</li>`;
             } else {
                  reviewHTML += `<li class="text-center text-gray-400 pt-2">今日の支出はありません</li>`;
@@ -999,8 +1013,8 @@
         
         const updateActiveTabStyle = () => {
              document.querySelectorAll('.tab').forEach(tab => {
-                if (tab.dataset.tab === activeTab) tab.classList.add('tab-active');
-                else tab.classList.remove('tab-active');
+                 if (tab.dataset.tab === activeTab) tab.classList.add('tab-active');
+                 else tab.classList.remove('tab-active');
             });
         };
         
@@ -1215,17 +1229,17 @@
                 quickExpenseList.innerHTML = '<p class="text-center text-gray-500">このカテゴリの履歴がまだありません。</p>';
             } else {
                  uniqueExpenses.slice(0, 10).forEach(exp => {
-                    const item = document.createElement('button');
-                    item.className = 'w-full text-left p-2 bg-gray-100 rounded-md hover:bg-gray-200';
-                    item.innerHTML = `<span class="font-semibold">${formatCurrency(exp.amount)}</span> <span class="text-gray-600">${exp.memo}</span>`;
-                    item.onclick = () => {
-                        document.getElementById('expense-amount-input').value = exp.amount;
-                        document.getElementById('expense-memo-input').value = exp.memo;
-                        document.getElementById('expense-date-input').value = '';
-                        quickExpenseModal.classList.add('hidden');
-                    };
-                    quickExpenseList.appendChild(item);
-                });
+                     const item = document.createElement('button');
+                     item.className = 'w-full text-left p-2 bg-gray-100 rounded-md hover:bg-gray-200';
+                     item.innerHTML = `<span class="font-semibold">${formatCurrency(exp.amount)}</span> <span class="text-gray-600">${exp.memo}</span>`;
+                     item.onclick = () => {
+                         document.getElementById('expense-amount-input').value = exp.amount;
+                         document.getElementById('expense-memo-input').value = exp.memo;
+                         document.getElementById('expense-date-input').value = '';
+                         quickExpenseModal.classList.add('hidden');
+                     };
+                     quickExpenseList.appendChild(item);
+                 });
             }
             quickExpenseModal.classList.remove('hidden');
         });
@@ -1342,4 +1356,5 @@
     </script>
 </body>
 </html>
+
 
