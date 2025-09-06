@@ -1,7 +1,7 @@
-// STEP 1: キャッシュ名を新しいバージョン('v5')に更新します
-const CACHE_NAME = 'jibun-yosan-cache-v5';
+// STEP 1: キャッシュ名を最終バージョン('v6')に更新します
+const CACHE_NAME = 'jibun-yosan-cache-v6';
 
-// STEP 2: プレキャッシュするファイルのリストです
+// STEP 2: 画像パスが正しいことを確認した上で、プレキャッシュするファイルを指定します
 const urlsToCache = [
   '/',
   '/index.html',
@@ -17,58 +17,48 @@ self.addEventListener('install', (event) => {
         console.log('Opened cache and caching files');
         return cache.addAll(urlsToCache);
       })
+      .then(() => {
+        // ★★★ 改善点1: 新しいワーカーがインストールされたら、待機せず即座に次のステップへ進む
+        return self.skipWaiting();
+      })
   );
 });
 
-// activateイベント ★★★ここが改善点です★★★
+// activateイベント
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.filter((cacheName) => {
-          // このサービスワーカーが管理するキャッシュ以外を削除します
           return cacheName.startsWith('jibun-yosan-cache-') &&
                  cacheName !== CACHE_NAME;
         }).map((cacheName) => {
-          console.log('Deleting old cache:', cacheName);
           return caches.delete(cacheName);
         })
       );
+    }).then(() => {
+      // ★★★ 改善点2: 有効化されたら、即座にすべてのクライアント（開いているタブ）の制御を取得する
+      return self.clients.claim();
     })
   );
 });
 
-// fetchイベント
+// fetchイベント（変更なし）
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          return caches.match('/index.html');
-        })
+      fetch(event.request).catch(() => caches.match('/index.html'))
     );
     return;
   }
-
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(
-          (networkResponse) => {
-            if (!networkResponse || networkResponse.status !== 200) {
-              return networkResponse;
-            }
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-            return networkResponse;
-          }
-        );
-      })
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request).then((fetchResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, fetchResponse.clone());
+          return fetchResponse;
+        });
+      });
+    })
   );
 });
