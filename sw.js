@@ -1,5 +1,5 @@
 // STEP 1: デバッグ用にキャッシュ名をバージョンアップ
-const CACHE_NAME = 'jibun-yosan-cache-v7-debug';
+const CACHE_NAME = 'jibun-yosan-cache-v8';
 
 const urlsToCache = [
   '/',
