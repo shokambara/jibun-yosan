@@ -23,9 +23,14 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        /* PWAで表示した際に日付部分のボックスが大きくなる問題の修正 */
         input[type="date"] {
-             /* PWAで表示した際に日付部分のボックスが大きくなる問題の修正 */
-             line-height: normal;
+             padding-top: 0.5rem;
+             padding-bottom: 0.5rem;
+        }
+        #start-date-input, #end-date-input {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
         }
         input[type="date"]:not(:valid)::before {
             content: attr(placeholder);
@@ -1458,4 +1463,5 @@
     </script>
 </body>
 </html>
+
 
